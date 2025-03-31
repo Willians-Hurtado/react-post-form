@@ -5,8 +5,11 @@ function App() {
     author: '',
     title: '',
     body: '',
-    state: ''
+    state: 'public'
   });
+
+  const [isError, setIsError] = useState(false);
+  const [isSuccsess, setIsSuccess] = useState(false);
 
   function handleFormData(e) {
     setFormData({
@@ -14,7 +17,35 @@ function App() {
       [e.target.name]: e.target.value
     });
 
+    setIsError('')
     console.log(`[${e.target.name}]: ${e.target.value}`);
+
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (formData.author === '' || formData.title === '' || formData.body === '' || formData.state === '') {
+      setIsError('Please fill in all fields');
+      return;
+    } else {
+      setIsSuccess('Form submitted successfully');
+    }
+
+    fetch('https://jsonplaceholder.typicode.com/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(formData)
+    })
+      .then(response => response.json())
+      .then(data => console.log(data))
+      .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while submitting the form. Please try again.' + error.message);
+      })
+
 
   }
 
@@ -27,7 +58,7 @@ function App() {
         </div>
         <div className="card-body">
 
-          <form>
+          <form onSubmit={handleSubmit}>
             <h3>Author</h3>
             <input className="form-control mb-3" type="text" name="author" placeholder="Write the author's name" value={formData.author} onChange={handleFormData} />
 
@@ -43,18 +74,10 @@ function App() {
               <option value="draft">Draft</option>
             </select>
 
-            <button type="submit" className="btn btn-primary" onClick={(e) => {
-              e.preventDefault();
-              fetch('https://jsonplaceholder.typicode.com/posts', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-              })
-                .then(response => response.json())
-                .then(data => console.log(data))
-            }}>
+            {isError && <div className="alert alert-danger">{isError}</div>}
+            {isSuccsess && <div className="alert alert-success">{isSuccsess}</div>}
+
+            <button type="submit" className="btn btn-primary" onSubmit={handleSubmit}>
               Submit
             </button>
 
